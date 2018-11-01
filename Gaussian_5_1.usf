@@ -1,0 +1,73 @@
+' userdefined excitation function
+
+Option Explicit
+
+Function ExcitationFunction(dtime As Double) As Double
+
+   'Assign the excitation signal value for the given time to the function name.
+   Dim cst_tau As Double
+   Dim cst_delay As Double
+   Dim cst_time As Double
+   Dim Cst_scale As Double
+   Dim t As Double
+   Dim a As Double
+
+
+
+
+   cst_tau = 0.067
+   cst_delay = 0.4
+   cst_time = dtime - cst_delay
+   Cst_scale = 1/(2.55*10000000)
+
+   cst_time=dtime - cst_delay
+
+   t = cst_time
+
+   a = cst_tau
+
+   If ((cst_time/cst_tau) > 20) Then
+   	ExcitationFunction =  0
+   Else
+   		ExcitationFunction = Cst_scale*(-(15*t/(Sqr(2*Pi)*a^7))+(10*t^3/(Sqr(2*Pi)*a^9))-(t^5/(Sqr(2*Pi)*a^11)))*Exp(-0.5*((t/a)^2))
+
+
+   End If
+
+
+ End Function
+
+
+' -------------------------------------------------------------------------------------------------
+' Main: This function serves as a main program for testing purposes. (runs and plots the function)
+'       You need to rename this function to "Main" for debugging the excitation function.
+'
+'       Please adjust the time step width and the number of time steps accordingly.
+'
+'		PLEASE NOTE that a userdefined excitation file (*.usf) must not contain a main program for
+'       proper execution by the framework. Therefore please ensure to rename this function
+'       to e.g. "Main2" before the Transient Solver is started
+' -------------------------------------------------------------------------------------------------
+
+Sub Main2
+	Dim tmax As Double, ntstep As Long
+
+	' -------------- PLEASE ADJUST THE SETTINGS BELOW ----------------------
+	tmax   = 2
+	ntstep = 500
+	' -------------- PLEASE ADJUST THE SETTINGS ABOVE ----------------------
+
+	Dim signal As Object, n As Long, tstep As Double
+	Set signal = Result1D("")
+	signal.Initialize ntstep
+	tstep = tmax / ntstep
+
+	For n=0 To ntstep-1
+		signal.SetXY(n, n * tstep, ExcitationFunction(n * tstep))
+	Next n
+
+	signal.Save GetProjectBaseName() + "~excitation function.sig"
+	signal.AddToTree "Excitation Signals\Userdefined Functions\userdefined_plot"
+	SelectTreeItem  "Excitation Signals\Userdefined Functions\userdefined_plot"
+	Resulttree.RefreshView
+End Sub
